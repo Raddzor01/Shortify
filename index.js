@@ -5,7 +5,7 @@ const { Client } = require('pg');
 
 const logFilePath = path.join(__dirname, 'logs', 'server.log');
 
-const db = require('db-deploy.js');
+const db = require('./db-deploy.js');
 
 const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
@@ -174,5 +174,5 @@ db.connect()
         logToFile('Successful connection to PostgreSQL');
     })
     .catch((err) => {
-        logToFile('PostgreSQL connection error: ' + JSON.stringify(err));
+        logToFile('PostgreSQL connection error: ' + err.message);
     });

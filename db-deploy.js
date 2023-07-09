@@ -1,7 +1,7 @@
 const fs = require('fs');
-const { Client } = require('pg');
+const { Client, Pool } = require('pg');
 
-const db = new Client(JSON.parse(fs.readFileSync('./db-config.json', 'utf8')));
+const db = new Pool(JSON.parse(fs.readFileSync('./db-config.json', 'utf8')));
 
 db.connect();
 
