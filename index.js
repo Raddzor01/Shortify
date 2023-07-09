@@ -81,17 +81,12 @@ function isURL(str) {
 }
 
 function logToFile(logMessage) {
-    fs.access(logFilePath, (error) => {
-        if (error) {
+    const formattedLogMessage = `[${new Date().toISOString()}] ${logMessage}\n`;
 
+    fs.appendFile(path.join(__dirname, 'logs', 'server.log'), formattedLogMessage, (err) => {
+        if (err) {
+            console.error('Logging error: ', err);
         }
-        const formattedLogMessage = `[${new Date().toISOString()}] ${logMessage}\n`;
-
-        fs.appendFile(logFilePath, formattedLogMessage, (err) => {
-            if (err) {
-                console.error('Logging error: ', err);
-            }
-        });
     });
 }
 
