@@ -4,6 +4,7 @@
   "description": "A plugin for shortening links",
   "main": "index.js",
   "scripts": {
+    "install": "node deploy.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,8 +18,5 @@
   "bugs": {
     "url": "https://github.com/Raddzor01/Shortify/issues"
   },
-  "homepage": "https://github.com/Raddzor01/Shortify#readme",
-  "dependencies": {
-    "pg": "^8.11.1"
-  }
+  "homepage": "https://github.com/Raddzor01/Shortify#readme"
 }

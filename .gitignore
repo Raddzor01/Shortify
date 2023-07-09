@@ -6,3 +6,4 @@ logs/
 config.js
 .env
 .env.*
+links.txt

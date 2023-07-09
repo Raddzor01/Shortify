@@ -1,90 +1,62 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { Client } = require('pg');
-
-const logFilePath = path.join(__dirname, 'logs', 'server.log');
-
-const db = require('./db-deploy.js');
 
 const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
-        fs.readFile(path.join(__dirname, 'public', 'index.html'), (err, data) => {
-            if (err) {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                res.end('Internal Server Error');
-                return;
-            }
-
-            res.writeHead(200, {
-                'Content-Type': 'text/html'
-            })
-
+        try {
+            const data = await readFileAsync(path.join(__dirname, 'public', 'index.html'));
+            res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(data);
-        })
+        } catch (err) {
+            handleError(res, err);
+        }
     } else if (req.url === '/css/style.css') {
-        fs.readFile(path.join(__dirname, 'public', 'css/style.css'), (err, data) => {
-            if (err) {
-                throw err;
-            }
-
-            res.writeHead(200, {
-                'Content-Type': 'text/css'
-            });
-
+        try {
+            const data = await readFileAsync(path.join(__dirname, 'public', 'css/style.css'));
+            res.writeHead(200, { 'Content-Type': 'text/css' });
             res.end(data);
-        });
+        } catch (err) {
+            handleError(res, err);
+        }
     } else if (req.url === '/js/script.js') {
-        fs.readFile(path.join(__dirname, 'public', 'js/script.js'), (err, data) => {
-            if (err) {
-                throw err;
-            }
-
-            res.writeHead(200, {
-                'Content-Type': 'application/javascript'
-            });
-
+        try {
+            const data = await readFileAsync(path.join(__dirname, 'public', 'js/script.js'));
+            res.writeHead(200, { 'Content-Type': 'application/javascript' });
             res.end(data);
-        });
+        } catch (err) {
+            handleError(res, err);
+        }
     } else if (req.method === 'POST' && req.url === '/api/data') {
-        let requestBody = '';
-        req.on('data', chunk => {
-            requestBody += chunk.toString();
-        });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(requestBody);
-                const inputValue = data.data;
-
-                if (!isURL(inputValue)) {
-                    const response = { message: undefined };
-                    res.end(JSON.stringify(response));
-                    return;
-                }
-
-                const id = generateId();
-                let queryText = 'INSERT INTO links (id, link) VALUES ($1, $2)';
-                let queryValues = [id, inputValue];
-
+        try {
+            let requestBody = '';
+            req.on('data', chunk => {
+                requestBody += chunk.toString();
+            });
+            req.on('end', async () => {
                 try {
-                    await db.query(queryText, queryValues);
-                    logToFile('INSERT completed successfully');
-                } catch (err) {
-                    logToFile('INSERT execution error: ' + err.message);
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Internal Server Error');
-                    return;
-                }
+                    const data = JSON.parse(requestBody);
+                    const inputValue = data.data;
 
-                const response = { message: id };
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(response));
-            } catch (err) {
-                logToFile('Query execution error: ' + err.message);
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                res.end('Internal Server Error');
-            }
-        });
+                    if (!isURL(inputValue)) {
+                        const response = { message: undefined };
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify(response));
+                        return;
+                    }
+
+                    const id = generateId();
+                    await writeLinkToFile(id, inputValue);
+                    const response = { message: id };
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(response));
+                } catch (err) {
+                    handleError(res, err);
+                }
+            });
+        } catch (err) {
+            handleError(res, err);
+        }
     } else {
         try {
             const id = req.url.slice(1);
@@ -97,13 +69,11 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(302, { 'Location': link });
             res.end();
         } catch (err) {
-            logToFile('Query execution error: ' + err.message);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Internal Server Error');
+            handleError(res, err);
         }
     }
 
-})
+});
 
 function isURL(str) {
     const urlPattern = /^(http?:\/\/)?([\w.-]+)\.([a-zA-Z]{2,6})(\/[\w.-]*)*\/?$/;
@@ -113,19 +83,7 @@ function isURL(str) {
 function logToFile(logMessage) {
     fs.access(logFilePath, (error) => {
         if (error) {
-            fs.mkdir(path.join(__dirname, 'logs'), (error) => {
-                if (error) {
-                    console.error('Error while creating directory: ', error);
-                } else {
-                    fs.writeFile(logFilePath, '', (error) => {
-                        if (error) {
-                            console.error('Error while creating file:', error);
-                        } else {
-                            console.log(`Log file created in ${logFilePath}`);
-                        }
-                    });
-                }
-            });
+
         }
         const formattedLogMessage = `[${new Date().toISOString()}] ${logMessage}\n`;
 
@@ -150,29 +108,59 @@ function generateId() {
 }
 
 async function findLinkById(id) {
-    try {
-        const result = await db.query('SELECT link FROM links WHERE id = $1', [id]);
-        if (result.rows.length > 0) {
-            const link = result.rows[0].link;
-            return link;
-        } else {
-            return '404';
+    const filePath = path.join(__dirname, 'links.txt');
+    const data = await readFileAsync(filePath);
+
+    const lines = data.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line) {
+            const [savedId, link] = line.split(',');
+            if (savedId === id) return link;
         }
-    } catch (err) {
-        logToFile('Query execution error: ' + err.message);
-        throw err;
     }
+
+    return '404';
+}
+
+async function writeLinkToFile(id, link) {
+    const data = `${id},${link}\n`;
+    const filePath = path.join(__dirname, 'links.txt');
+    await appendFileAsync(filePath, data);
+    logToFile('Entry successfully added to the file.');
+}
+
+function readFileAsync(filePath) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+}
+
+function appendFileAsync(filePath, data) {
+    return new Promise((resolve, reject) => {
+        fs.appendFile(filePath, data, (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+function handleError(res, err) {
+    logToFile('Query execution error: ' + err.message);
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Internal Server Error');
 }
 
 server.listen(3000, () => {
     console.log('Successful server startup');
     logToFile('Server has been started');
 });
-
-db.connect()
-    .then(() => {
-        logToFile('Successful connection to PostgreSQL');
-    })
-    .catch((err) => {
-        logToFile('PostgreSQL connection error: ' + err.message);
-    });
