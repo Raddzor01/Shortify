@@ -5,13 +5,7 @@ const { Client } = require('pg');
 
 const logFilePath = path.join(__dirname, 'logs', 'server.log');
 
-const db = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'links',
-    password: '600E9468CC28744462F8',
-    port: 5432
-});
+const db = require('db-deploy.js');
 
 const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
