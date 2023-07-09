@@ -7,7 +7,7 @@ A plugin for shortening links on Javascript using Node.js
 ```shell
 npm install
 ```
-# Run
+# Run server
 
 ```shell
 npm start
