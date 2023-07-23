@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "A plugin for shortening links",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "install": "node deploy.js",
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +20,13 @@
   "bugs": {
     "url": "https://github.com/Raddzor01/Shortify/issues"
   },
-  "homepage": "https://github.com/Raddzor01/Shortify#readme"
+  "homepage": "https://github.com/Raddzor01/Shortify#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nanoid": "^4.0.2",
+    "pg": "^8.11.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
 }

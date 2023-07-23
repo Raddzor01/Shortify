@@ -13,9 +13,8 @@ function submitData() {
         .then(response => response.json())
         .then(data => {
             if (data.message === undefined) {
-                const text = resultOutput.textContent;
                 resultOutput.textContent = 'Invalid link!';
-                setTimeout(() => { resultOutput.textContent = text }, 3000);
+                setTimeout(() => { resultOutput.textContent = '' }, 3000);
             } else {
                 resultOutput.textContent = `Your short link is: ${window.location.href}${data.message}`;
             }
