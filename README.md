@@ -16,7 +16,7 @@ A plugin for shortening links on Javascript using Node.js
   - `psql` get to the PostgreSQL command line
   - `\password postgres` set user password
   - create a new user `CREATE USER raddzor WITH PASSWORD 'root'`;
-  -  create database CREATE `DATABASE shortify OWNER raddzor;`
+  -  create database `CREATE DATABASE shortify OWNER raddzor;`
   - `\quit` exit
 - Execute the file with the SQL script for creating the database
   - `sudo psql -U raddzor -d shortify -a -f db/db.sql`
