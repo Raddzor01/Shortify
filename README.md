@@ -17,10 +17,10 @@ A plugin for shortening links on Javascript using Node.js
   - `\password postgres` set user password
   - create a new user `CREATE USER raddzor WITH PASSWORD 'root'`;
   -  create database CREATE `DATABASE shortify OWNER raddzor;`
-  - \quit exit
+  - `\quit` exit
 - Execute the file with the SQL script for creating the database
   - `sudo psql -U raddzor -d shortify -a -f db/db.sql`
-- If you want to use other data to create the database, change the default data in the db/pool-config.json file to yours
-- Install dependencies (including the pg module) npm i
-- Run npm start
-- Open http://localhost:3000 to view it in your browser.
+- If you want to use other data to create the database, change the default data in the `db/pool-config.json` file to yours
+- Install dependencies (including the pg module) `npm i`
+- Run `npm start`
+- Open `http://localhost:3000` to view it in your browser.
