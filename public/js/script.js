@@ -1,4 +1,5 @@
 const resultOutput = document.querySelector('#result p');
+const errOutput = document.querySelector('#err-result p');
 
 function submitData() {
     const inputValue = document.getElementById('textInput').value;
@@ -13,8 +14,13 @@ function submitData() {
         .then(response => response.json())
         .then(data => {
             if (data.message === undefined) {
-                resultOutput.textContent = 'Invalid link!';
-                setTimeout(() => { resultOutput.textContent = '' }, 3000);
+                let outputText = resultOutput.textContent;
+                resultOutput.textContent = '';
+                errOutput.textContent = 'Invalid link!';
+                setTimeout(() => {
+                    errOutput.textContent = '';
+                    resultOutput.textContent = outputText;
+             }, 3000);
             } else {
                 resultOutput.textContent = `Your short link is: ${window.location.href}${data.message}`;
             }

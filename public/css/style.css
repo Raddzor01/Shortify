@@ -38,7 +38,11 @@
   font-size: 18px;
 }
 
-.result p {
+#result p {
   cursor: pointer;
   font-style: italic;
+}
+
+#err-result p {
+  color: red;
 }
